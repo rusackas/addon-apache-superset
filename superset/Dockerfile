@@ -1,4 +1,4 @@
-ARG BUILD_FROM
+ARG BUILD_FROM=apache/superset:4.1.1
 FROM ${BUILD_FROM}
 
 # Install additional database drivers and dependencies

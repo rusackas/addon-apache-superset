@@ -182,19 +182,22 @@ if [ ! -f "${INIT_FLAG}" ]; then
     echo "Initializing roles..."
     superset init
 
-    # Register Home Assistant database
+    # Register Home Assistant database using superset CLI
     echo "Registering Home Assistant database connection..."
-    python3 << PYTHON
+    superset set-database-uri -d "Home Assistant" -u "${HA_DATABASE_URI}" 2>/dev/null || \
+    python3 << 'PYTHON'
 import os
 import sys
-sys.path.insert(0, '/etc/superset')
 
+# Create app first, then import models
 from superset.app import create_app
-from superset.extensions import db
-from superset.connectors.sqla.models import Database
-
 app = create_app()
+
 with app.app_context():
+    # Now safe to import models
+    from superset.extensions import db
+    from superset.models.core import Database
+
     # Check if database already exists
     existing = db.session.query(Database).filter_by(database_name="Home Assistant").first()
     if not existing:
