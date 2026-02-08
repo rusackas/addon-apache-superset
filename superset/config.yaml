@@ -1,0 +1,41 @@
+name: "HAAS - Apache Superset"
+version: "1.0.0"
+slug: haas
+description: "Powerful data visualization and dashboarding for your Home Assistant data"
+url: "https://github.com/rusackas/haas-addon"
+arch:
+  - amd64
+  - aarch64
+init: false
+ingress: true
+ingress_port: 8088
+panel_icon: mdi:chart-box-outline
+panel_title: Superset
+startup: application
+map:
+  - config:ro
+  - share:rw
+  - ssl:ro
+ports:
+  8088/tcp: null
+ports_description:
+  8088/tcp: "Superset web interface (use ingress instead)"
+options:
+  database_type: sqlite
+  database_host: ""
+  database_port: 3306
+  database_name: homeassistant
+  database_user: ""
+  database_password: ""
+  superset_secret_key: ""
+  admin_password: ""
+schema:
+  database_type: list(sqlite|mysql|postgresql)
+  database_host: str?
+  database_port: port?
+  database_name: str?
+  database_user: str?
+  database_password: password?
+  superset_secret_key: password?
+  admin_password: password?
+image: ghcr.io/rusackas/haas-addon-{arch}

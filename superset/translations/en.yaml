@@ -1,0 +1,42 @@
+configuration:
+  database_type:
+    name: Database Type
+    description: >-
+      The type of database used by your Home Assistant Recorder.
+      Most users should leave this as 'sqlite'.
+  database_host:
+    name: Database Host
+    description: >-
+      Hostname or IP address of your database server.
+      For the MariaDB add-on, use 'core-mariadb'.
+      Leave empty for SQLite.
+  database_port:
+    name: Database Port
+    description: >-
+      Port number for your database server.
+      Default is 3306 for MySQL/MariaDB, 5432 for PostgreSQL.
+  database_name:
+    name: Database Name
+    description: >-
+      Name of your Home Assistant Recorder database.
+      Usually 'homeassistant'.
+  database_user:
+    name: Database Username
+    description: >-
+      Username for connecting to the database.
+      Leave empty for SQLite.
+  database_password:
+    name: Database Password
+    description: >-
+      Password for the database user.
+      Leave empty for SQLite.
+  superset_secret_key:
+    name: Superset Secret Key
+    description: >-
+      Secret key for Superset session encryption.
+      Leave empty to auto-generate a secure key on first run.
+  admin_password:
+    name: Admin Password
+    description: >-
+      Password for the Superset admin user.
+      Leave empty to auto-generate on first run (check logs for password).

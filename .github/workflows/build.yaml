@@ -1,0 +1,131 @@
+name: Build and Publish
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    name: Build Add-on
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        arch:
+          - amd64
+          - aarch64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.arch }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Get Superset version
+        id: superset
+        run: |
+          VERSION=$(grep -oP 'apache/superset:\K[0-9.]+' superset/build.yaml | head -1)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./superset
+          file: ./superset/Dockerfile
+          platforms: linux/${{ matrix.arch }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BUILD_FROM=apache/superset:${{ steps.superset.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate config.yaml
+        run: |
+          python3 -c "import yaml; yaml.safe_load(open('superset/config.yaml'))"
+
+      - name: Validate build.yaml
+        run: |
+          python3 -c "import yaml; yaml.safe_load(open('superset/build.yaml'))"
+
+      - name: Validate repository.yaml
+        run: |
+          python3 -c "import yaml; yaml.safe_load(open('repository.yaml'))"
+
+      - name: Shellcheck
+        run: |
+          sudo apt-get update && sudo apt-get install -y shellcheck
+          find . -name "*.sh" -type f -exec shellcheck {} \;
+
+  test:
+    name: Test Scripts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Test sample database generator
+        run: |
+          python scripts/generate_sample_db.py
+          ls -la test_data/
+
+      - name: Verify database
+        run: |
+          sqlite3 test_data/home-assistant_v2.db "SELECT COUNT(*) FROM statistics;"
+          sqlite3 test_data/home-assistant_v2.db "SELECT COUNT(*) FROM states;"
+          sqlite3 test_data/home-assistant_v2.db "SELECT COUNT(*) FROM events;"

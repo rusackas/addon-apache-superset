@@ -1,0 +1,10 @@
+build_from:
+  amd64: apache/superset:4.1.1
+  aarch64: apache/superset:4.1.1
+labels:
+  org.opencontainers.image.title: "HAAS - Home Assistant Apache Superset"
+  org.opencontainers.image.description: "Apache Superset for Home Assistant"
+  org.opencontainers.image.source: "https://github.com/rusackas/haas-addon"
+  org.opencontainers.image.licenses: "Apache-2.0"
+args:
+  BUILD_ARCH: "{arch}"
