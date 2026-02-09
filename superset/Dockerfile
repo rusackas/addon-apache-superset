@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends jq \
 RUN pip install --no-cache-dir \
     pymysql \
     psycopg2-binary \
+    zstandard \
     && rm -rf /root/.cache
 
 # Create directories for Home Assistant integration

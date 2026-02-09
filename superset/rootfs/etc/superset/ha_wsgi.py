@@ -9,6 +9,9 @@ import gzip
 import re
 import sys
 import zlib
+
+import zstandard as zstd
+
 from superset.app import create_app
 
 
@@ -34,6 +37,9 @@ class HAIngressMiddleware:
             except zlib.error:
                 # Try raw deflate
                 return zlib.decompress(data, -zlib.MAX_WBITS)
+        elif encoding == "zstd":
+            dctx = zstd.ZstdDecompressor()
+            return dctx.decompress(data)
         return data
 
     def _compress(self, data, encoding):
@@ -42,6 +48,9 @@ class HAIngressMiddleware:
             return gzip.compress(data)
         elif encoding == "deflate":
             return zlib.compress(data)
+        elif encoding == "zstd":
+            cctx = zstd.ZstdCompressor()
+            return cctx.compress(data)
         return data
 
     def _rewrite_html(self, text, script_name):
@@ -224,7 +233,7 @@ class HAIngressMiddleware:
 
             try:
                 # Decompress if needed
-                if content_encoding in ("gzip", "deflate"):
+                if content_encoding in ("gzip", "deflate", "zstd"):
                     body = self._decompress(body, content_encoding)
                     if path_info != "/health":
                         print(f"[HA-Ingress] Decompressed {content_encoding} ({len(body)} bytes)", file=sys.stderr)
@@ -256,7 +265,7 @@ class HAIngressMiddleware:
                 body = text.encode("utf-8")
 
                 # Recompress if needed
-                if content_encoding in ("gzip", "deflate"):
+                if content_encoding in ("gzip", "deflate", "zstd"):
                     body = self._compress(body, content_encoding)
                     if path_info != "/health":
                         print(f"[HA-Ingress] Recompressed {content_encoding} ({len(body)} bytes)", file=sys.stderr)
