@@ -4,6 +4,10 @@ FROM ${BUILD_FROM}
 # Install additional database drivers and dependencies
 USER root
 
+# Install jq for parsing HA options.json
+RUN apt-get update && apt-get install -y --no-install-recommends jq \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir \
     pymysql \
     psycopg2-binary \

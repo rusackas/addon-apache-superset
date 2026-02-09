@@ -1,5 +1,5 @@
 name: "HAAS - Apache Superset"
-version: "1.0.1"
+version: "1.0.2"
 slug: haas
 description: "Powerful data visualization and dashboarding for your Home Assistant data"
 url: "https://github.com/rusackas/haas-addon"
