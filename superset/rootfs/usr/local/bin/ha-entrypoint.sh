@@ -157,6 +157,23 @@ CORS_OPTIONS = {
 
 # Logging
 LOG_LEVEL = "INFO"
+
+# Home Assistant Ingress middleware
+# Handles X-Ingress-Path header to set correct SCRIPT_NAME
+class HAIngressMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        ingress_path = environ.get("HTTP_X_INGRESS_PATH", "")
+        if ingress_path:
+            environ["SCRIPT_NAME"] = ingress_path.rstrip("/")
+            path_info = environ.get("PATH_INFO", "")
+            if path_info.startswith(ingress_path):
+                environ["PATH_INFO"] = path_info[len(ingress_path.rstrip("/")):]
+        return self.app(environ, start_response)
+
+ADDITIONAL_MIDDLEWARE = [HAIngressMiddleware]
 EOF
 
 echo "Superset configuration generated"
