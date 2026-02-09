@@ -1,8 +1,8 @@
 name: "Apache Superset"
-version: "1.0.3"
+version: "1.0.4"
 slug: superset
 description: "Powerful data visualization and dashboarding for your Home Assistant data"
-url: "https://github.com/rusackas/hassio-addon-superset"
+url: "https://github.com/rusackas/addon-apache-superset"
 arch:
   - amd64
   - aarch64
@@ -38,4 +38,4 @@ schema:
   database_password: password?
   superset_secret_key: password?
   admin_password: password?
-image: ghcr.io/rusackas/hassio-addon-superset-{arch}
+image: ghcr.io/rusackas/addon-apache-superset-{arch}

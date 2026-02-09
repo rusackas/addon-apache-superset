@@ -21,7 +21,7 @@ This add-on brings Apache Superset to Home Assistant, pre-configured to visualiz
 1. Navigate to **Settings** > **Add-ons** > **Add-on Store**
 2. Click the three dots in the top right corner
 3. Select **Repositories**
-4. Add this repository URL: `https://github.com/rusackas/hassio-addon-superset`
+4. Add this repository URL: `https://github.com/rusackas/addon-apache-superset`
 5. Click **Add**
 
 ### Install the Add-on
