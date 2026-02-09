@@ -11,16 +11,17 @@ Usage:
     3. Export the dashboards using export_dashboards.py
 """
 
+import os
 import requests
 import json
 import time
 from typing import Optional
 import sys
 
-# Configuration
-SUPERSET_URL = "http://localhost:8088"
-USERNAME = "admin"
-PASSWORD = "admin"
+# Configuration (can be overridden with environment variables)
+SUPERSET_URL = os.environ.get("SUPERSET_URL", "http://localhost:8088")
+USERNAME = os.environ.get("SUPERSET_USER", "admin")
+PASSWORD = os.environ.get("SUPERSET_PASSWORD", "admin")
 
 # Dataset SQL definitions
 DATASETS = {
@@ -161,29 +162,29 @@ class SupersetClient:
         self._login(username, password)
 
     def _login(self, username: str, password: str) -> None:
-        """Authenticate with Superset."""
-        # Get CSRF token
-        response = self.session.get(f"{self.base_url}/api/v1/security/csrf_token/")
-        if response.status_code == 200:
-            self.csrf_token = response.json().get("result")
-            self.session.headers["X-CSRFToken"] = self.csrf_token
+        """Authenticate with Superset using session-based auth."""
+        # Login via web form to get session cookie
+        login_url = f"{self.base_url}/login/"
+        response = self.session.get(login_url)
 
-        # Login
+        # POST login
         response = self.session.post(
-            f"{self.base_url}/api/v1/security/login",
-            json={
+            login_url,
+            data={
                 "username": username,
                 "password": password,
-                "provider": "db",
             },
+            allow_redirects=True,
         )
 
         if response.status_code != 200:
-            raise Exception(f"Login failed: {response.text}")
+            raise Exception(f"Login failed: {response.status_code}")
 
-        data = response.json()
-        self.access_token = data.get("access_token")
-        self.session.headers["Authorization"] = f"Bearer {self.access_token}"
+        # Get CSRF token for API calls
+        csrf_response = self.session.get(f"{self.base_url}/api/v1/security/csrf_token/")
+        if csrf_response.status_code == 200:
+            self.csrf_token = csrf_response.json().get("result")
+            self.session.headers["X-CSRFToken"] = self.csrf_token
 
         print(f"Logged in to Superset as {username}")
 
@@ -210,14 +211,13 @@ class SupersetClient:
                 print(f"  Dataset '{name}' already exists (ID: {existing[0]['id']})")
                 return existing[0]["id"]
 
-        # Create new dataset
+        # Create new virtual dataset from SQL
         response = self.session.post(
             f"{self.base_url}/api/v1/dataset/",
             json={
                 "database": database_id,
                 "table_name": name,
                 "sql": sql,
-                "is_sqllab_view": True,
             },
         )
 

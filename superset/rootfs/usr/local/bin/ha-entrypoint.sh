@@ -178,25 +178,20 @@ if [ ! -f "${INIT_FLAG}" ]; then
         --email admin@haas.local \
         --password "${ADMIN_PASSWORD}" || true
 
-    # Initialize roles and permissions
-    echo "Initializing roles..."
-    superset init
-
-    # Register Home Assistant database using superset CLI
+    # Register Home Assistant database connection
     echo "Registering Home Assistant database connection..."
-    superset set-database-uri -d "Home Assistant" -u "${HA_DATABASE_URI}" 2>/dev/null || \
     python3 << 'PYTHON'
 import os
-import sys
 
-# Create app first, then import models
 from superset.app import create_app
 app = create_app()
 
 with app.app_context():
-    # Now safe to import models
-    from superset.extensions import db
+    from superset.extensions import db, security_manager
     from superset.models.core import Database
+
+    # Get admin user for ownership
+    admin_user = security_manager.find_user(username="admin")
 
     # Check if database already exists
     existing = db.session.query(Database).filter_by(database_name="Home Assistant").first()
@@ -210,12 +205,20 @@ with app.app_context():
             allow_cvas=False,
             allow_dml=False,
         )
+        if admin_user:
+            ha_db.created_by_fk = admin_user.id
+            ha_db.changed_by_fk = admin_user.id
         db.session.add(ha_db)
         db.session.commit()
         print("Home Assistant database registered successfully")
     else:
         print("Home Assistant database already registered")
 PYTHON
+
+    # Initialize roles and permissions AFTER database registration
+    # This ensures the database permissions are synced correctly
+    echo "Initializing roles and permissions..."
+    superset init
 
     # Mark as initialized
     touch "${INIT_FLAG}"

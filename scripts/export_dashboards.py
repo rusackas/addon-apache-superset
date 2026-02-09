@@ -11,16 +11,17 @@ Usage:
     3. Copy the output to superset/rootfs/etc/superset/dashboards/
 """
 
+import os
 import requests
 import json
 import sys
 from pathlib import Path
 from typing import Optional
 
-# Configuration
-SUPERSET_URL = "http://localhost:8088"
-USERNAME = "admin"
-PASSWORD = "admin"
+# Configuration (can be overridden with environment variables)
+SUPERSET_URL = os.environ.get("SUPERSET_URL", "http://localhost:8088")
+USERNAME = os.environ.get("SUPERSET_USER", "admin")
+PASSWORD = os.environ.get("SUPERSET_PASSWORD", "admin")
 OUTPUT_DIR = Path(__file__).parent.parent / "superset" / "rootfs" / "etc" / "superset" / "dashboards"
 
 
@@ -35,29 +36,29 @@ class SupersetClient:
         self._login(username, password)
 
     def _login(self, username: str, password: str) -> None:
-        """Authenticate with Superset."""
-        # Get CSRF token
-        response = self.session.get(f"{self.base_url}/api/v1/security/csrf_token/")
-        if response.status_code == 200:
-            self.csrf_token = response.json().get("result")
-            self.session.headers["X-CSRFToken"] = self.csrf_token
+        """Authenticate with Superset using session-based auth."""
+        # Login via web form to get session cookie
+        login_url = f"{self.base_url}/login/"
+        response = self.session.get(login_url)
 
-        # Login
+        # POST login
         response = self.session.post(
-            f"{self.base_url}/api/v1/security/login",
-            json={
+            login_url,
+            data={
                 "username": username,
                 "password": password,
-                "provider": "db",
             },
+            allow_redirects=True,
         )
 
         if response.status_code != 200:
-            raise Exception(f"Login failed: {response.text}")
+            raise Exception(f"Login failed: {response.status_code}")
 
-        data = response.json()
-        self.access_token = data.get("access_token")
-        self.session.headers["Authorization"] = f"Bearer {self.access_token}"
+        # Get CSRF token for API calls
+        csrf_response = self.session.get(f"{self.base_url}/api/v1/security/csrf_token/")
+        if csrf_response.status_code == 200:
+            self.csrf_token = csrf_response.json().get("result")
+            self.session.headers["X-CSRFToken"] = self.csrf_token
 
         print(f"Logged in to Superset as {username}")
 
