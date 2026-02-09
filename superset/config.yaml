@@ -1,8 +1,8 @@
-name: "HAAS - Apache Superset"
-version: "1.0.2"
-slug: haas
+name: "Apache Superset"
+version: "1.0.3"
+slug: superset
 description: "Powerful data visualization and dashboarding for your Home Assistant data"
-url: "https://github.com/rusackas/haas-addon"
+url: "https://github.com/rusackas/hassio-addon-superset"
 arch:
   - amd64
   - aarch64
@@ -10,7 +10,7 @@ init: false
 ingress: true
 ingress_port: 8088
 panel_icon: mdi:chart-box-outline
-panel_title: Superset
+panel_title: Apache Superset
 startup: application
 map:
   - config:ro
@@ -38,4 +38,4 @@ schema:
   database_password: password?
   superset_secret_key: password?
   admin_password: password?
-image: ghcr.io/rusackas/haas-addon-{arch}
+image: ghcr.io/rusackas/hassio-addon-superset-{arch}

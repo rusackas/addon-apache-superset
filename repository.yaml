@@ -1,3 +1,3 @@
-name: HAAS - Home Assistant Apache Superset
-url: https://github.com/rusackas/haas-addon
+name: Apache Superset Add-on
+url: https://github.com/rusackas/hassio-addon-superset
 maintainer: Evan Rusackas <evan@rusackas.com>

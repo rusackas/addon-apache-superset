@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-# HAAS - Home Assistant Apache Superset Add-on Entrypoint
+# Apache Superset Add-on Entrypoint
 # This script initializes Superset for Home Assistant and starts the web server
 
 echo "================================================"
-echo "HAAS - Home Assistant Apache Superset"
+echo "Apache Superset for Home Assistant"
 echo "================================================"
 
 # Paths

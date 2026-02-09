@@ -1,10 +1,10 @@
-# HAAS - Home Assistant Apache Superset Add-on
+# Apache Superset Add-on for Home Assistant
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 **Powerful data visualization for your Home Assistant data.**
 
-HAAS brings Apache Superset to Home Assistant as a native add-on, pre-configured to visualize your Recorder database with beautiful default dashboards.
+This add-on brings Apache Superset to Home Assistant, pre-configured to visualize your Recorder database with beautiful default dashboards.
 
 ## Features
 
@@ -21,12 +21,12 @@ HAAS brings Apache Superset to Home Assistant as a native add-on, pre-configured
 1. Navigate to **Settings** > **Add-ons** > **Add-on Store**
 2. Click the three dots in the top right corner
 3. Select **Repositories**
-4. Add this repository URL: `https://github.com/rusackas/haas-addon`
+4. Add this repository URL: `https://github.com/rusackas/hassio-addon-superset`
 5. Click **Add**
 
 ### Install the Add-on
 
-1. Find "HAAS - Apache Superset" in the add-on store
+1. Find "Apache Superset" in the add-on store
 2. Click **Install**
 3. Wait for the installation to complete
 4. Click **Start**
@@ -34,7 +34,7 @@ HAAS brings Apache Superset to Home Assistant as a native add-on, pre-configured
 
 ## Configuration
 
-For most users, no configuration is needed. HAAS automatically connects to your Home Assistant Recorder database.
+For most users, no configuration is needed. The add-on automatically connects to your Home Assistant Recorder database.
 
 ### Options
 
@@ -62,7 +62,7 @@ database_password: your_password
 
 ## Default Dashboards
 
-HAAS ships with four pre-configured dashboards:
+This add-on ships with four pre-configured dashboards:
 
 1. **Home Overview**: Temperature, humidity, binary sensor activity, entity statistics
 2. **Energy & Utilities**: Power consumption, daily/weekly/monthly trends
