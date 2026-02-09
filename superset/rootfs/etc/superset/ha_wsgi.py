@@ -20,16 +20,28 @@ class HAIngressMiddleware:
         ingress_path = environ.get("HTTP_X_INGRESS_PATH", "")
         path_info = environ.get("PATH_INFO", "/")
 
-        # Log for debugging
-        print(f"[HA-Ingress] Request: PATH_INFO={path_info}, X-Ingress-Path={ingress_path}", file=sys.stderr)
+        # Log for debugging (skip health checks to reduce noise)
+        if path_info != "/health":
+            print(f"[HA-Ingress] Request: PATH_INFO={path_info}, X-Ingress-Path={ingress_path}", file=sys.stderr)
 
         if ingress_path:
             # Set SCRIPT_NAME so Flask generates correct URLs
             script_name = ingress_path.rstrip("/")
             environ["SCRIPT_NAME"] = script_name
-            print(f"[HA-Ingress] Set SCRIPT_NAME={script_name}", file=sys.stderr)
+            if path_info != "/health":
+                print(f"[HA-Ingress] Set SCRIPT_NAME={script_name}", file=sys.stderr)
 
-        return self.app(environ, start_response)
+        # Wrap start_response to log the status
+        def logging_start_response(status, headers, exc_info=None):
+            if path_info != "/health":
+                print(f"[HA-Ingress] Response: {status}", file=sys.stderr)
+                # Log Location header for redirects
+                for name, value in headers:
+                    if name.lower() == "location":
+                        print(f"[HA-Ingress] Redirect to: {value}", file=sys.stderr)
+            return start_response(status, headers, exc_info)
+
+        return self.app(environ, logging_start_response)
 
 
 # Create the wrapped application
